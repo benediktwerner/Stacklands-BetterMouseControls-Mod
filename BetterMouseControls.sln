@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32630.192
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{ecda8ef2-faba-4ff4-be40-6f79dc379cc7}") = "BetterMouseControls", "BetterMouseControls.csproj", "{c12553f0-28f6-4f12-9093-ba8f6a51e063}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{c12553f0-28f6-4f12-9093-ba8f6a51e063}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{c12553f0-28f6-4f12-9093-ba8f6a51e063}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{c12553f0-28f6-4f12-9093-ba8f6a51e063}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{c12553f0-28f6-4f12-9093-ba8f6a51e063}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {e3bc27e7-d642-47f3-b088-bb705a5ec39b}
+	EndGlobalSection
+EndGlobal

@@ -117,9 +117,12 @@ namespace BetterMouseControls
                     && previousDraggable is GameCard root
                     && ((root.Child == null && AllParentsSameCard(root)) || InConflict(root))
                     && root.CardData.CanBeDragged
+                    && !root.IsEquipped
                 )
                 {
                     var last = root.GetLeafCard();
+                    var length = root.GetRootCard().GetChildCount() + 1;
+                    if (length < 30) {
                     foreach (var card in __instance.AllCards)
                     {
                         if (
@@ -128,6 +131,7 @@ namespace BetterMouseControls
                             && card.Parent == null
                             && !InConflict(card)
                             && SameCard(card, root)
+                            && !card.IsEquipped
                         )
                         {
                             Vector3 dist = root.transform.position - card.transform.position;
@@ -138,15 +142,17 @@ namespace BetterMouseControls
                                     * Plugin.doubleclickRestackRange.Value
                             )
                             {
-                                var leaf = GetLeafIfAllSame(card);
+                                var leaf = GetLeafIfAllSameAndSpace(card, ref length);
                                 if (leaf != null)
                                 {
                                     last.Child = card;
                                     card.Parent = last;
                                     last = leaf;
+                                    if (length >= 30)    break;
                                 }
                             }
                         }
+                    }
                     }
                 }
                 previousMousePos = mouse;
@@ -164,14 +170,16 @@ namespace BetterMouseControls
                 || (ad is Equipable && bd is Equipable);
         }
 
-        static GameCard GetLeafIfAllSame(GameCard card)
+        static GameCard GetLeafIfAllSameAndSpace(GameCard card, ref int length)
         {
+            var count = 1;
             while (card.Child != null)
             {
-                if (!SameCard(card, card.Child))
+                if (!SameCard(card, card.Child) || ++count + length > 30)
                     return null;
                 card = card.Child;
             }
+            length += count;
             return card;
         }
 

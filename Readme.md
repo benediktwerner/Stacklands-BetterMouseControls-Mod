@@ -20,4 +20,7 @@ This mod requires BepInEx to work. BepInEx is a modding framework which allows m
 
 ## Changelog
 
+- v1.0.1:
+  - Fix equipped cards getting pulled on double click
+  - Fix pulling into stacks larger than 30
 - v1.0: Initial release

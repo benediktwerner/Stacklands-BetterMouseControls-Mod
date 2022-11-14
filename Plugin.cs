@@ -1,17 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Reflection.Emit;
 using BepInEx;
 using BepInEx.Configuration;
+using BepInEx.Logging;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace BetterMouseControls
 {
-    [BepInPlugin(
-        "de.benediktwerner.stacklands.bettermousecontrols",
-        PluginInfo.PLUGIN_NAME,
-        PluginInfo.PLUGIN_VERSION
-    )]
+    [BepInPlugin("de.benediktwerner.stacklands.bettermousecontrols", PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     public class Plugin : BaseUnityPlugin
     {
         public static ConfigEntry<bool> enableRightclickDrag;
@@ -20,8 +19,12 @@ namespace BetterMouseControls
         public static ConfigEntry<float> doubleclickMaxDistance;
         public static ConfigEntry<float> doubleclickRestackRange;
 
+        public static ManualLogSource L;
+
         private void Awake()
         {
+            L = Logger;
+
             enableRightclickDrag = Config.Bind(
                 "General",
                 "EnableRightclickDrag",
@@ -102,9 +105,7 @@ namespace BetterMouseControls
             if (
                 __instance.CanInteract
                 && InputController.instance.GetInputBegan(0)
-                && !GameCanvas.instance.PositionIsOverUI(
-                    InputController.instance.GetInputPosition(0)
-                )
+                && !GameCanvas.instance.PositionIsOverUI(InputController.instance.GetInputPosition(0))
             )
             {
                 var mouse = Mouse.current.position.ReadValue();
@@ -122,37 +123,38 @@ namespace BetterMouseControls
                 {
                     var last = root.GetLeafCard();
                     var length = root.GetRootCard().GetChildCount() + 1;
-                    if (length < 30) {
-                    foreach (var card in __instance.AllCards)
+                    if (length < 30)
                     {
-                        if (
-                            card != root
-                            && card.MyBoard.IsCurrent
-                            && card.Parent == null
-                            && !InConflict(card)
-                            && SameCard(card, root)
-                            && !card.IsEquipped
-                        )
+                        foreach (var card in __instance.AllCards)
                         {
-                            Vector3 dist = root.transform.position - card.transform.position;
-                            dist.y = 0f;
                             if (
-                                dist.sqrMagnitude
-                                <= Plugin.doubleclickRestackRange.Value
-                                    * Plugin.doubleclickRestackRange.Value
+                                card != root
+                                && card.MyBoard.IsCurrent
+                                && card.Parent == null
+                                && !InConflict(card)
+                                && SameCard(card, root)
+                                && !card.IsEquipped
                             )
                             {
-                                var leaf = GetLeafIfAllSameAndSpace(card, ref length);
-                                if (leaf != null)
+                                Vector3 dist = root.transform.position - card.transform.position;
+                                dist.y = 0f;
+                                if (
+                                    dist.sqrMagnitude
+                                    <= Plugin.doubleclickRestackRange.Value * Plugin.doubleclickRestackRange.Value
+                                )
                                 {
-                                    last.Child = card;
-                                    card.Parent = last;
-                                    last = leaf;
-                                    if (length >= 30)    break;
+                                    var leaf = GetLeafIfAllSameAndSpace(card, ref length);
+                                    if (leaf != null)
+                                    {
+                                        last.Child = card;
+                                        card.Parent = last;
+                                        last = leaf;
+                                        if (length >= 30)
+                                            break;
+                                    }
                                 }
                             }
                         }
-                    }
                     }
                 }
                 previousMousePos = mouse;
@@ -165,9 +167,7 @@ namespace BetterMouseControls
         {
             var ad = a.CardData;
             var bd = b.CardData;
-            return ad.Id == bd.Id
-                || (ad is Villager && bd is Villager)
-                || (ad is Equipable && bd is Equipable);
+            return ad.Id == bd.Id || (ad is Villager && bd is Villager) || (ad is Equipable && bd is Equipable);
         }
 
         static GameCard GetLeafIfAllSameAndSpace(GameCard card, ref int length)
@@ -226,6 +226,49 @@ namespace BetterMouseControls
         {
             if (Mouse.current.rightButton.wasReleasedThisFrame)
                 __result = true;
+        }
+
+        [HarmonyPatch(typeof(WorldManager), nameof(WorldManager.Update))]
+        [HarmonyTranspiler]
+        public static IEnumerable<CodeInstruction> DontStopDragIfRightclicking(
+            IEnumerable<CodeInstruction> instructions
+        )
+        {
+            return new CodeMatcher(instructions)
+                .MatchForward(
+                    false,
+                    new CodeMatch(
+                        OpCodes.Callvirt,
+                        AccessTools.Method(typeof(InputController), nameof(InputController.StoppedGrabbing))
+                    ),
+                    new CodeMatch(OpCodes.Stloc_S),
+                    new CodeMatch(OpCodes.Ldsfld),
+                    new CodeMatch(OpCodes.Ldc_I4_0),
+                    new CodeMatch(OpCodes.Callvirt),
+                    new CodeMatch(OpCodes.Ldloc_S),
+                    new CodeMatch(OpCodes.Or),
+                    new CodeMatch(OpCodes.Brtrue),
+                    new CodeMatch(OpCodes.Ldsfld),
+                    new CodeMatch(
+                        OpCodes.Callvirt,
+                        AccessTools.PropertyGetter(typeof(InputController), nameof(InputController.InputCount))
+                    ),
+                    new CodeMatch(OpCodes.Brfalse)
+                )
+                .ThrowIfInvalid("Didn't find InputCount == 0 check")
+                .Advance(10)
+                .Insert(
+                    Transpilers.EmitDelegate(() => Mouse.current.rightButton.isPressed),
+                    new CodeInstruction(OpCodes.Or)
+                )
+                .InstructionEnumeration();
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(GameCamera), nameof(GameCamera.StartDragging))]
+        public static void StartDragging(out bool __runOriginal)
+        {
+            __runOriginal = !Mouse.current.rightButton.wasPressedThisFrame;
         }
     }
 }

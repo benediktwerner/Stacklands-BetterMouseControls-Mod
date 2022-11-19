@@ -116,13 +116,28 @@ namespace BetterMouseControls
                     && (previousMousePos - mouse).sqrMagnitude
                         <= Plugin.doubleclickMaxDistance.Value * Plugin.doubleclickMaxDistance.Value
                     && previousDraggable is GameCard root
-                    && ((root.Child == null && AllParentsSameCard(root)) || InConflict(root))
+                    && (
+                        (root.Child == null && AllParentsSameCard(root))
+                        || (root.Parent == null && AllChildrenSameCard(root))
+                        || InConflict(root)
+                    )
                     && root.CardData.CanBeDragged
                     && !root.IsEquipped
                 )
                 {
+                    var conflict = root.Combatable?.MyConflict;
                     var last = root.GetLeafCard();
-                    var length = root.GetRootCard().GetChildCount() + 1;
+                    if (root.Parent != null)
+                    {
+                        var realRoot = root.GetRootCard();
+                        var newLast = root.Parent;
+                        newLast.Child = null;
+                        root.Parent = null;
+                        last.Child = realRoot;
+                        realRoot.Parent = last;
+                        last = newLast;
+                    }
+                    var length = root.GetChildCount() + 1;
                     if (length < 30)
                     {
                         foreach (var card in __instance.AllCards)
@@ -131,6 +146,7 @@ namespace BetterMouseControls
                                 card != root
                                 && card.MyBoard.IsCurrent
                                 && card.Parent == null
+                                && card.CanBeDragged()
                                 && !InConflict(card)
                                 && SameCard(card, root)
                                 && !card.IsEquipped
@@ -146,11 +162,22 @@ namespace BetterMouseControls
                                     var leaf = GetLeafIfAllSameAndSpace(card, ref length);
                                     if (leaf != null)
                                     {
-                                        last.Child = card;
-                                        card.Parent = last;
-                                        last = leaf;
-                                        if (length >= 30)
-                                            break;
+                                        if (conflict != null)
+                                        {
+                                            var cards = card.GetChildCards();
+                                            conflict.JoinConflict(card.CardData as Combatable);
+                                            foreach (var child in cards)
+                                                conflict.JoinConflict(child.CardData as Combatable);
+                                            length = 0;
+                                        }
+                                        else
+                                        {
+                                            last.Child = card;
+                                            card.Parent = last;
+                                            last = leaf;
+                                            if (length >= 30)
+                                                break;
+                                        }
                                     }
                                 }
                             }
@@ -190,6 +217,17 @@ namespace BetterMouseControls
                 if (!SameCard(card, card.Parent))
                     return false;
                 card = card.Parent;
+            }
+            return true;
+        }
+
+        static bool AllChildrenSameCard(GameCard card)
+        {
+            while (card.Child != null)
+            {
+                if (!SameCard(card, card.Child))
+                    return false;
+                card = card.Child;
             }
             return true;
         }

@@ -29,8 +29,12 @@ This mod requires BepInEx to work. BepInEx is a modding framework which allows m
 
 ## Changelog
 
-- v1.0.2: Fix right-click drag after game update v1.2.5
-- v1.0.1:
+- v1.1
+  - Allow double-clicking stack root to pull onto stack
+  - Double-clicking a combatant will now properly pull all similar cards into the fight
+- v1.0.2
+  - Fix right-click drag after game update v1.2.5
+- v1.0.1
   - Fix equipped cards getting pulled on double click
   - Fix pulling into stacks larger than 30
 - v1.0: Initial release

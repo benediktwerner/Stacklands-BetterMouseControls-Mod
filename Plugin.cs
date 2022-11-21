@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Reflection.Emit;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -271,42 +269,6 @@ namespace BetterMouseControls
         {
             if (Mouse.current.rightButton.wasReleasedThisFrame)
                 __result = true;
-        }
-
-        [HarmonyPatch(typeof(WorldManager), nameof(WorldManager.Update))]
-        [HarmonyTranspiler]
-        public static IEnumerable<CodeInstruction> DontStopDragIfRightclicking(
-            IEnumerable<CodeInstruction> instructions
-        )
-        {
-            return new CodeMatcher(instructions)
-                .MatchForward(
-                    false,
-                    new CodeMatch(
-                        OpCodes.Callvirt,
-                        AccessTools.Method(typeof(InputController), nameof(InputController.StoppedGrabbing))
-                    ),
-                    new CodeMatch(OpCodes.Stloc_S),
-                    new CodeMatch(OpCodes.Ldsfld),
-                    new CodeMatch(OpCodes.Ldc_I4_0),
-                    new CodeMatch(OpCodes.Callvirt),
-                    new CodeMatch(OpCodes.Ldloc_S),
-                    new CodeMatch(OpCodes.Or),
-                    new CodeMatch(OpCodes.Brtrue),
-                    new CodeMatch(OpCodes.Ldsfld),
-                    new CodeMatch(
-                        OpCodes.Callvirt,
-                        AccessTools.PropertyGetter(typeof(InputController), nameof(InputController.InputCount))
-                    ),
-                    new CodeMatch(OpCodes.Brfalse)
-                )
-                .ThrowIfInvalid("Didn't find InputCount == 0 check")
-                .Advance(10)
-                .Insert(
-                    Transpilers.EmitDelegate(() => Mouse.current.rightButton.isPressed),
-                    new CodeInstruction(OpCodes.Or)
-                )
-                .InstructionEnumeration();
         }
 
         [HarmonyPrefix]

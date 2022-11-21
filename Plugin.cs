@@ -82,7 +82,14 @@ namespace BetterMouseControls
             {
                 if (harmony == null)
                 {
-                    harmony = Harmony.CreateAndPatchAll(patches);
+                    try
+                    {
+                        harmony = Harmony.CreateAndPatchAll(patches);
+                    }
+                    catch (Exception e)
+                    {
+                        Plugin.L.LogError("Patch " + patches + " failed:\n" + e);
+                    }
                 }
             }
             else if (harmony != null)

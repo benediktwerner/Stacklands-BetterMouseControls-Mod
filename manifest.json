@@ -1,7 +1,5 @@
 {
-  "name": "BetterMouseControls",
-  "description": "Doubleclick cards to restack them and drag whole stacks with right-click",
-  "version_number": "1.1.1",
-  "dependencies": ["BepInEx-BepInExPack_Stacklands-5.4.2100"],
-  "website_url": "https://github.com/benediktwerner/Stacklands-BetterMouseControls-Mod"
+  "id": "BetterMouseControls",
+  "name": "Better Mouse Controls",
+  "version": "1.2.0"
 }

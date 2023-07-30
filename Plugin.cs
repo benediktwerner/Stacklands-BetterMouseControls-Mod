@@ -1,15 +1,11 @@
 ﻿using System;
-using BepInEx;
-using BepInEx.Configuration;
-using BepInEx.Logging;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace BetterMouseControls
 {
-    [BepInPlugin("de.benediktwerner.stacklands.bettermousecontrols", PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
-    public class Plugin : BaseUnityPlugin
+    public class Plugin : Mod
     {
         public static ConfigEntry<bool> enableRightclickDrag;
         public static ConfigEntry<bool> enableDoubleclick;
@@ -17,53 +13,62 @@ namespace BetterMouseControls
         public static ConfigEntry<float> doubleclickMaxDistance;
         public static ConfigEntry<float> doubleclickRestackRange;
 
-        public static ManualLogSource L;
+        public static ModLogger L;
+
+        public ToggleableHarmonySetup rightclickDragSetup;
+        public ToggleableHarmonySetup doubleclickRestackSetup;
+
+        private ConfigEntry<T> CreateConfig<T>(string name, T defaultValue, string description)
+        {
+            return Config.GetEntry<T>(name, defaultValue, new ConfigUI { Tooltip = description });
+        }
 
         private void Awake()
         {
             L = Logger;
 
-            enableRightclickDrag = Config.Bind(
-                "General",
+            enableRightclickDrag = CreateConfig(
                 "EnableRightclickDrag",
                 true,
                 "Enables dragging whole stacks by holding the right mouse button"
             );
-            enableDoubleclick = Config.Bind(
-                "General",
+            enableDoubleclick = CreateConfig(
                 "EnableDoubleclickRestack",
                 true,
                 "Enables restacking same cards by doubleclicking"
             );
-            doubleclickMaxDelay = Config.Bind(
-                "General",
+            doubleclickMaxDelay = CreateConfig(
                 "DoubleclickMaxDelay",
                 0.5f,
                 "How much time (in seconds) can pass at most between two clicks for them to be recognized as a doubleclick"
             );
-            doubleclickMaxDistance = Config.Bind(
-                "General",
+            doubleclickMaxDistance = CreateConfig(
                 "DoubleclickMaxDistance",
                 5f,
                 "How far the mouse can move at most between clicks for them to be recognized as a doubleclick"
             );
-            doubleclickRestackRange = Config.Bind(
-                "General",
+            doubleclickRestackRange = CreateConfig(
                 "DoubleclickRestackRange",
                 4f,
                 "How far away cards can be to still be pulled onto the stack"
             );
 
-            new ToggleableHarmonySetup(enableRightclickDrag, typeof(RightclickDragPatches));
-            new ToggleableHarmonySetup(enableDoubleclick, typeof(DoubleclickRestackPatches));
+            rightclickDragSetup = new ToggleableHarmonySetup(enableRightclickDrag, typeof(RightclickDragPatches));
+            doubleclickRestackSetup = new ToggleableHarmonySetup(enableDoubleclick, typeof(DoubleclickRestackPatches));
+        }
+
+        public void OnDestroy()
+        {
+            rightclickDragSetup.harmony.UnpatchSelf();
+            doubleclickRestackSetup.harmony.UnpatchSelf();
         }
     }
 
     public class ToggleableHarmonySetup
     {
-        ConfigEntry<bool> enabled;
-        Harmony harmony;
-        Type patches;
+        public ConfigEntry<bool> enabled;
+        public Harmony harmony;
+        public Type patches;
 
         public ToggleableHarmonySetup(ConfigEntry<bool> enabled, Type patches)
         {
@@ -71,7 +76,7 @@ namespace BetterMouseControls
             this.patches = patches;
             if (enabled.Value)
                 SyncPatchState();
-            enabled.SettingChanged += (_, _) => SyncPatchState();
+            enabled.OnChanged += (_) => SyncPatchState();
         }
 
         void SyncPatchState()

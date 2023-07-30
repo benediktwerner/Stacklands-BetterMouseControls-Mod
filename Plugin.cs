@@ -15,9 +15,6 @@ namespace BetterMouseControls
 
         public static ModLogger L;
 
-        public ToggleableHarmonySetup rightclickDragSetup;
-        public ToggleableHarmonySetup doubleclickRestackSetup;
-
         private ConfigEntry<T> CreateConfig<T>(string name, T defaultValue, string description)
         {
             return Config.GetEntry<T>(name, defaultValue, new ConfigUI { Tooltip = description });
@@ -53,22 +50,16 @@ namespace BetterMouseControls
                 "How far away cards can be to still be pulled onto the stack"
             );
 
-            rightclickDragSetup = new ToggleableHarmonySetup(enableRightclickDrag, typeof(RightclickDragPatches));
-            doubleclickRestackSetup = new ToggleableHarmonySetup(enableDoubleclick, typeof(DoubleclickRestackPatches));
-        }
-
-        public void OnDestroy()
-        {
-            rightclickDragSetup.harmony.UnpatchSelf();
-            doubleclickRestackSetup.harmony.UnpatchSelf();
+            new ToggleableHarmonySetup(enableRightclickDrag, typeof(RightclickDragPatches));
+            new ToggleableHarmonySetup(enableDoubleclick, typeof(DoubleclickRestackPatches));
         }
     }
 
     public class ToggleableHarmonySetup
     {
-        public ConfigEntry<bool> enabled;
-        public Harmony harmony;
-        public Type patches;
+        ConfigEntry<bool> enabled;
+        Harmony harmony;
+        Type patches;
 
         public ToggleableHarmonySetup(ConfigEntry<bool> enabled, Type patches)
         {

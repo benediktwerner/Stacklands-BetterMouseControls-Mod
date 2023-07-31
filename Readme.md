@@ -21,6 +21,7 @@ Each feature can be disabled individually and there are some parameters that can
 
 ## Changelog
 
+- v1.2.2: Fix disabling one of the features leading to all getting disabled
 - v1.2.1: Don't unpatch when exiting the game
 - v1.2.0: Steam Workshop Support
 - v1.1.1: Update for game version 1.2.6

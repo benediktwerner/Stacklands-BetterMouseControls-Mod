@@ -4,7 +4,7 @@
     <AssemblyName>BetterMouseControls</AssemblyName>
     <Product>BetterMouseControls</Product>
     <Description>Better mouse controls</Description>
-    <Version>1.2.1</Version>
+    <Version>1.2.2</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <PublicizerRuntimeStrategies>Unsafe</PublicizerRuntimeStrategies>

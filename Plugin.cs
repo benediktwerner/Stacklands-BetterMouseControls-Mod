@@ -78,7 +78,7 @@ namespace BetterMouseControls
                 {
                     try
                     {
-                        harmony = Harmony.CreateAndPatchAll(patches);
+                        harmony = Harmony.CreateAndPatchAll(patches, patches.ToString());
                     }
                     catch (Exception e)
                     {

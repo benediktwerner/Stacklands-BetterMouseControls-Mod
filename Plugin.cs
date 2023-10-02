@@ -124,6 +124,7 @@ namespace BetterMouseControls
                     )
                     && root.CardData.CanBeDragged
                     && !root.IsEquipped
+                    && root.CardData.Id != Cards.resource_chest
                 )
                 {
                     var conflict = root.Combatable?.MyConflict;

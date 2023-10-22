@@ -152,6 +152,7 @@ namespace BetterMouseControls
                                 && !InConflict(card)
                                 && SameCard(card, root)
                                 && !card.IsEquipped
+                                && (conflict != null || last.CardData.CanHaveCardOnTop(card.CardData))
                             )
                             {
                                 Vector3 dist = root.transform.position - card.transform.position;

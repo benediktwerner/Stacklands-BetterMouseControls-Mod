@@ -21,6 +21,7 @@ Each feature can be disabled individually and there are some parameters that can
 
 ## Changelog
 
+- v1.2.5: Fix compatibility with the _Stacklands 2000_ DLC
 - v1.2.4: Fix double click being able to stack unstackable cards
 - v1.2.3: Disable double click to stack on resource chests
 - v1.2.2: Fix disabling one of the features leading to all getting disabled

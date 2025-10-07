@@ -57,9 +57,9 @@ namespace BetterMouseControls
 
     public class ToggleableHarmonySetup
     {
-        ConfigEntry<bool> enabled;
+        readonly ConfigEntry<bool> enabled;
         Harmony harmony;
-        Type patches;
+        readonly Type patches;
 
         public ToggleableHarmonySetup(ConfigEntry<bool> enabled, Type patches)
         {
@@ -86,9 +86,9 @@ namespace BetterMouseControls
                     }
                 }
             }
-            else if (harmony != null)
+            else
             {
-                harmony.UnpatchSelf();
+                harmony?.UnpatchSelf();
             }
         }
     }
